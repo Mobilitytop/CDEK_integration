@@ -10,12 +10,20 @@ const styles = StyleSheet.create({
   labelWrapper: {
     flexDirection: 'row',
   },
+  form: {
+    flex: 1,
+  },
   input: {
     height: 48,
     borderWidth: 1,
     borderColor: '#ececec',
     marginBottom: 20,
     paddingLeft: 13,
+    flex: 1,
+  },
+  inputs: {
+    flexDirection: 'row',
+    gap: 12,
   },
   required: {
     color: 'red',
@@ -39,6 +47,27 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     textTransform: 'uppercase',
   },
+  search: {
+    position: 'relative',
+    zIndex: 1000,
+  },
+  searchResult: {
+    borderWidth: 1,
+    borderColor: '#ececec',
+    paddingHorizontal: 13,
+    position: 'absolute',
+    top: 46,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    maxHeight: 132,
+  },
+  searchResultItem: {
+    borderBottomWidth: 1,
+    borderColor: '#ececec',
+    paddingVertical: 13,
+  },
+  searchResultText: {},
 });
 
 export default styles;

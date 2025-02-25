@@ -1,126 +1,84 @@
-import React from 'react';
-import { Text, TextInput, View, TouchableOpacity } from 'react-native';
-import defaultStyles from './styles';
+import React, { useMemo } from 'react';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+
 import { DeliveryMethodId } from '../DeliveryMethod/types';
-import useApp from '../../hooks/useApp';
 import { DeliveryFormsProps } from './types';
+import useApp from '../../hooks/useApp';
+import defaultStyles from './styles';
 
-const DeliveryForms: React.FC<DeliveryFormsProps> = ({
-  styles,
-  activeDeliveryMethod,
-  formData,
-  onChangeFormData,
-  onSave,
-}) => {
+import Courier from './Courier';
+import Pickup from './Pickup';
+import CDEKDoor from './CDEK-door';
+import CDEKPoint from './CDEK-point';
+import Post from './Post';
+
+const DeliveryForms: React.FC<DeliveryFormsProps> = (props) => {
   const { isDarkMode } = useApp();
+  const { styles, activeDeliveryMethod, formData, onSave } = props;
 
-  const disabled =
-    activeDeliveryMethod !== DeliveryMethodId.PICKUP &&
-    (!formData.address || !formData.index || formData.index?.length < 6);
+  const disabled = useMemo(() => {
+    switch (activeDeliveryMethod) {
+      case DeliveryMethodId.COURIER:
+        return (
+          !formData.address ||
+          !formData.flat ||
+          !formData.entrance ||
+          !formData.intercom ||
+          !formData.floor
+        );
+      case DeliveryMethodId.PICKUP:
+        return false;
+      case DeliveryMethodId.CDEK_DOOR:
+        return (
+          !formData.city?.code ||
+          !formData.address ||
+          !formData.flat ||
+          !formData.entrance ||
+          !formData.intercom ||
+          !formData.floor
+        );
+      case DeliveryMethodId.CDEK_POINT:
+        return !formData.city?.code || !formData.pickupPoint;
+      case DeliveryMethodId.POST:
+        return (
+          !formData.address || !formData.index || formData.index?.length < 6
+        );
+      default:
+        return false;
+    }
+  }, [activeDeliveryMethod, formData]);
+
+  const form = useMemo(() => {
+    switch (activeDeliveryMethod) {
+      case DeliveryMethodId.COURIER:
+        return <Courier {...props} />;
+      case DeliveryMethodId.PICKUP:
+        return <Pickup {...props} />;
+      case DeliveryMethodId.CDEK_DOOR:
+        return <CDEKDoor {...props} />;
+      case DeliveryMethodId.CDEK_POINT:
+        return <CDEKPoint {...props} />;
+      case DeliveryMethodId.POST:
+        return <Post {...props} />;
+      default:
+        return <></>;
+    }
+  }, [activeDeliveryMethod, props]);
 
   return (
     <View style={{ ...defaultStyles.container, ...styles?.container }}>
-      {activeDeliveryMethod !== DeliveryMethodId.PICKUP && (
-        <>
-          <View
-            style={{
-              ...defaultStyles.labelWrapper,
-              ...styles?.labelWrapper,
-            }}
-          >
-            <Text
-              style={{
-                color: isDarkMode ? '#fff' : '#000',
-                ...defaultStyles.label,
-                ...styles?.label,
-              }}
-            >
-              Адрес доставки
-            </Text>
-
-            <Text
-              style={{
-                ...defaultStyles.required,
-                ...styles?.required,
-              }}
-            >
-              *
-            </Text>
-          </View>
-          <TextInput
-            value={formData.address}
-            onChangeText={(address) => onChangeFormData({ address })}
-            style={{
-              color: isDarkMode ? '#fff' : '#000',
-              ...defaultStyles.input,
-              ...styles?.input,
-            }}
-          />
-
-          <View
-            style={{
-              ...defaultStyles.labelWrapper,
-              ...styles?.labelWrapper,
-            }}
-          >
-            <Text
-              style={{
-                color: isDarkMode ? '#fff' : '#000',
-                ...defaultStyles.label,
-                ...styles?.label,
-              }}
-            >
-              Индекс
-            </Text>
-            <Text
-              style={{
-                ...defaultStyles.required,
-                ...styles?.required,
-              }}
-            >
-              *
-            </Text>
-          </View>
-          <TextInput
-            value={formData.index}
-            keyboardType="numeric"
-            maxLength={6}
-            onChangeText={(index) => onChangeFormData({ index })}
-            style={{
-              color: isDarkMode ? '#fff' : '#000',
-              ...defaultStyles.input,
-              ...styles?.input,
-            }}
-          />
-        </>
-      )}
-
-      <View
-        style={{
-          ...defaultStyles.labelWrapper,
-          ...styles?.labelWrapper,
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
       >
-        <Text
-          style={{
-            color: isDarkMode ? '#fff' : '#000',
-            ...defaultStyles.label,
-            ...styles?.label,
-          }}
-        >
-          Комментарий к заказу
-        </Text>
-      </View>
-      <TextInput
-        value={formData.comment}
-        onChangeText={(comment) => onChangeFormData({ comment })}
-        style={{
-          color: isDarkMode ? '#fff' : '#000',
-          ...defaultStyles.input,
-          ...styles?.input,
-        }}
-      />
-
+        {form}
+      </KeyboardAvoidingView>
       <Text
         style={{
           color: isDarkMode ? '#fff' : '#000',
